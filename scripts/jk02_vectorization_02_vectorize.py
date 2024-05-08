@@ -48,7 +48,7 @@ for i, row in tqdm(meta_df_batch.iterrows()):
 
     gdf = raster_to_gdf(watershed_img)
 
-    print("4: add metainfo")
+    print("3: add metainfo")
     centroid_coords = np.array([(point.x, point.y)
                                 for point in gdf.geometry.centroid])
     centroid_coords = centroid_coords.astype(int)
@@ -59,10 +59,10 @@ for i, row in tqdm(meta_df_batch.iterrows()):
     gdf["tile_id"] = tile_id
     gdf["batch"] = batch
 
-    print("5: transform")
+    print("4: transform")
     gdf.geometry = gdf.geometry.apply(lambda geom: shapely.affinity.affine_transform(geom, np.ravel(transformation)))
 
-    print("6: add to batch df")
+    print("5: add to batch df")
     gdf_batch = pd.concat([gdf_batch, gdf], ignore_index=True)
 
 gdf_batch = gpd.GeoDataFrame(gdf_batch, crs=gdf_transformed.crs)

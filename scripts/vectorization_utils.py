@@ -39,24 +39,16 @@ def _filter_and_reindex(img):
 # Create a generator of polygons from the raster segments
 def raster_to_polygons(raster):
     for geom, value in rasterio.features.shapes(raster):
-        yield shapely.geometry.shape(geom), value
+        if value > 0:
+            yield shapely.geometry.shape(geom)
 
 
 def raster_to_gdf(raster):
-    #    print("1: start reindexing")
-    #    raster = _filter_and_reindex(raster)
-    # Convert raster segments to vector polygons
     print("\n1: start polygonizing")
-    polygonized = raster_to_polygons(raster.astype(rasterio.int32))
-    print("2: start creating features")
-    polygons = []
-    for polygon, value in polygonized:
-        if value != 0:  # Skip polygons where value is 0
-            polygons.append(
-                {'geometry': polygon, 'properties': {'value': int(value)}})
-    print("3: start creating dataframe")
-    # Convert polygons to GeoDataFrame
-    gdf = gpd.GeoDataFrame.from_features(polygons)
+    geometries = raster_to_polygons(raster.astype(rasterio.int32))
+    # Create a GeoDataFrame directly from the geometries
+    print("2: create dataframe")
+    gdf = gpd.GeoDataFrame(geometry=list(geometries))
     return gdf
 
 def get_transformation(tile_geometry):
