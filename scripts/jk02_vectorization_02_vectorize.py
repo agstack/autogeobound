@@ -5,8 +5,9 @@ import geopandas as gpd
 import numpy as np
 import cv2 as cv
 import sys
+import shapely.affinity
 
-from vectorization_utils import raster_to_gdf, map_points
+from vectorization_utils import raster_to_gdf, get_transformation
 
 batch = int(sys.argv[1])
 data_dir = "/home/johannes/data/"
@@ -43,9 +44,11 @@ for i, row in tqdm(meta_df_batch.iterrows()):
         continue
 
     tile_geometry = row.geometry
+    transformation = get_transformation(tile_geometry)
+
     gdf = raster_to_gdf(watershed_img)
 
-    print("5: add metainfo")
+    print("4: add metainfo")
     centroid_coords = np.array([(point.x, point.y)
                                 for point in gdf.geometry.centroid])
     centroid_coords = centroid_coords.astype(int)
@@ -56,13 +59,11 @@ for i, row in tqdm(meta_df_batch.iterrows()):
     gdf["tile_id"] = tile_id
     gdf["batch"] = batch
 
-    print("6: transform")
-    gdf_transformed = gdf.copy()
-    gdf_transformed.geometry = map_points(
-        gdf.geometry, tile_geometry)
+    print("5: transform")
+    gdf.geometry = gdf.geometry.apply(lambda geom: shapely.affinity.affine_transform(geom, np.ravel(transformation)))
 
-    print("7: add to batch df")
-    gdf_batch = pd.concat([gdf_batch, gdf_transformed], ignore_index=True)
+    print("6: add to batch df")
+    gdf_batch = pd.concat([gdf_batch, gdf], ignore_index=True)
 
 gdf_batch = gpd.GeoDataFrame(gdf_batch, crs=gdf_transformed.crs)
 gdf_batch.set_geometry(gdf_batch.geometry, inplace=True)
