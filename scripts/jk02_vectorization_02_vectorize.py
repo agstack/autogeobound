@@ -68,7 +68,7 @@ for i, row in tqdm(meta_df_batch.iterrows()):
 gdf_batch = gpd.GeoDataFrame(gdf_batch)#, geometry="geometry")#, crs=gdf_transformed.crs)
 gdf_batch.set_geometry(gdf_batch.geometry, inplace=True)
 
-res_file = os.path.join(data_dir, '/res/india_{:02d}.gpkg'.format(batch))
+res_file = os.path.join(data_dir, 'res/india_{:02d}.gpkg'.format(batch))
 gdf_batch.to_file(res_file, driver='GPKG', layer='segments')
 dest = "gs://india_field_delineation/predictions/vectorized/"
 os.system(
