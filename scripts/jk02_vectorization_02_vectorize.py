@@ -14,7 +14,7 @@ data_dir = "/home/johannes/data/"
 
 meta_df = gpd.read_file(os.path.join(data_dir, "tiles_karnataka.gpkg"))
 
-gdf_batch = pd.DataFrame()
+gdf_batch = gpd.GeoDataFrame()
 
 meta_df_batch = meta_df.loc[meta_df["batch"] == batch]
 for i, row in tqdm(meta_df_batch.iterrows()):
@@ -65,7 +65,7 @@ for i, row in tqdm(meta_df_batch.iterrows()):
     print("5: add to batch df")
     gdf_batch = pd.concat([gdf_batch, gdf], ignore_index=True)
 
-gdf_batch = gpd.GeoDataFrame(gdf_batch, crs=gdf_transformed.crs)
+gdf_batch = gpd.GeoDataFrame(gdf_batch)#, geometry="geometry")#, crs=gdf_transformed.crs)
 gdf_batch.set_geometry(gdf_batch.geometry, inplace=True)
 
 res_file = os.path.join(data_dir, '/res/india_{:02d}.gpkg'.format(batch))
